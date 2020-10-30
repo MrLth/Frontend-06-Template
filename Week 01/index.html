@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicTacToe</title>
+    <style>
+        #board {}
+
+        .cell {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 20px;
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="board"></div>
+    <script>
+        const arr = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ], c = 10
+
+        let color = 1
+        const aiColor = 2
+        const pattern = arr.flat(1) // 不使用二维数组是为了方便clone
+        const board = document.getElementById('board')
+
+        const render = (pattern) => {
+            board.innerHTML = ''
+            for (let x = 0; x < c; x++) {
+                for (let y = 0; y < c; y++) {
+                    const v = pattern[x * c + y]
+                    const cell = document.createElement('div')
+                    cell.classList.add('cell')
+                    cell.addEventListener('click', () => { move(x, y) })
+                    cell.setAttribute('title', `${x},${y}`)
+                    cell.innerText =
+                        v === 1 ? '⭕️' :
+                            v === 2 ? '❌' : ''
+                    board.appendChild(cell)
+
+                }
+                board.appendChild(document.createElement('br'))
+            }
+        }
+
+        const check = (pattern, color) => {
+            {
+                // 行
+                for (let x = 0, len = 3; x < len; x++) {
+                    let isWin = true
+                    for (let y = 0, len = 3; y < len; y++) {
+                        if (pattern[x * 3 + y] !== color) isWin = false
+                    }
+                    if (isWin) return true
+                }
+                // 列
+                for (let y = 0, len = 3; y < len; y++) {
+                    let isWin = true
+                    for (let x = 0, len = 3; x < len; x++) {
+                        if (pattern[x * 3 + y] !== color) isWin = false
+                    }
+                    if (isWin) return true
+                }
+                // 正斜
+                {
+                    let isWin = true
+                    for (let i = 0, len = 3; i < len; i++) {
+                        if (pattern[i * 3 + i] !== color) isWin = false
+                    }
+                    if (isWin) return true
+                }
+                // 反斜
+                {
+                    for (let i = 0, len = 3; i < len; i++) {
+                        if (pattern[i * 3 + (2 - i)] !== color) return false
+                    }
+                    return true
+                }
+            }
+        }
+
+        const move = (x, y) => {
+            if (pattern[x * c + y] !== 0) return
+
+            pattern[x * c + y] = color
+
+            defense(pattern, x, y, color, true)
+            console.log('defensePinch', defensePinch(pattern, x, y, color))
+            render(pattern)
+        }
+
+        const defense = (pattern, _x, _y, color, isResult = false) => {
+            const defenseCol = () => {
+                const candidate1 = []
+                const candidate2 = []
+                let count = 1
+                for (let x = _x + 1; x < c; x++) {
+                    const v = pattern[x * c + _y]
+                    if (v === color) {
+                        count++
+                        continue
+                    }
+
+                    if (v === 0) {
+                        if (candidate1.length === 0) {
+                            count++
+                            candidate1.push([x, _y])
+                            continue
+                        }
+                    }
+
+                    break
+                }
+                for (let x = _x - 1; x > -1; x--) {
+                    const v = pattern[x * c + _y]
+                    if (v === color) {
+                        count++
+                        continue
+                    }
+
+                    if (v === 0) {
+                        if (candidate2.length === 0) {
+                            count++
+                            candidate2.push([x, _y])
+                            continue
+                        }
+                    }
+
+                    break
+                }
+
+
+                return count > 4 ? candidate1.concat(candidate2) : []
+            }
+
+            const defenseRow = () => {
+                const candidate1 = []
+                const candidate2 = []
+                let count = 1
+                for (let y = _y + 1; y < c; y++) {
+                    const v = pattern[_x * c + y]
+                    if (v === color) {
+                        count++
+                        continue
+                    }
+
+                    if (v === 0) {
+                        if (candidate1.length === 0) {
+                            count++
+                            candidate1.push([_x, y])
+                            continue
+                        }
+                    }
+
+                    break
+                }
+                for (let y = _y - 1; y > -1; y--) {
+                    const v = pattern[_x * c + y]
+                    if (v === color) {
+                        count++
+                        continue
+                    }
+
+                    if (v === 0) {
+                        if (candidate2.length === 0) {
+                            count++
+                            candidate2.push([_x, y])
+                            continue
+                        }
+                    }
+
+                    break
+                }
+
+
+                return count > 4 ? candidate1.concat(candidate2) : []
+            }
+
+            const defenseForwardSlash = () => {
+                const candidate1 = []
+                const candidate2 = []
+                let count = 1
+                for (let y = _y - 1, x = _x + 1; y > -1 && x < c; y--, x++) {
+                    const v = pattern[x * c + y]
+                    if (v === color) {
+                        count++
+                        continue
+                    }
+
+                    if (v === 0) {
+                        if (candidate1.length === 0) {
+                            count++
+                            candidate1.push([x, y])
+                            continue
+                        }
+                    }
+
+                    break
+                }
+                for (let x = _x - 1, y = _y + 1; y < c && x > -1; y++, x--) {
+                    const v = pattern[x * c + y]
+                    if (v === color) {
+                        count++
+                        continue
+                    }
+
+                    if (v === 0) {
+                        if (candidate2.length === 0) {
+                            count++
+                            candidate2.push([x, y])
+                            continue
+                        }
+                    }
+
+                    break
+                }
+
+                return count > 4 ? candidate1.concat(candidate2) : []
+            }
+
+            const defenseBackslash = () => {
+                const candidate1 = []
+                const candidate2 = []
+                let count = 1
+                for (let y = _y + 1, x = _x + 1; y < c && x < c; y++, x++) {
+                    const v = pattern[x * c + y]
+                    if (v === color) {
+                        count++
+                        continue
+                    }
+
+                    if (v === 0) {
+                        if (candidate1.length === 0) {
+                            count++
+                            candidate1.push([x, y])
+                            continue
+                        }
+                    }
+
+                    break
+                }
+                for (let x = _x - 1, y = _y - 1; y > -1 && x > -1; y--, x--) {
+                    const v = pattern[x * c + y]
+                    if (v === color) {
+                        count++
+                        continue
+                    }
+
+                    if (v === 0) {
+                        if (candidate2.length === 0) {
+                            count++
+                            candidate2.push([x, y])
+                            continue
+                        }
+                    }
+
+                    break
+                }
+
+
+                return count > 4 ? candidate1.concat(candidate2) : []
+            }
+
+
+            const arr1 = defenseCol()
+            const arr2 = defenseRow()
+            const arr3 = defenseForwardSlash()
+            const arr4 = defenseBackslash()
+            let arr = [].concat(arr1, arr2, arr3, arr4)
+
+            if (!isResult) return [arr1.length, arr1.length, arr1.length, arr1.length].filter(v => v > 0).length
+            let maxFriendlyCount = 0, point = null
+            for (const v of arr) {
+                const count = friendlyCount(pattern, v[0], v[1], color)
+
+                if (count > maxFriendlyCount) {
+                    maxFriendlyCount = count
+                    point = v
+                }
+            }
+
+            console.log('point', point)
+
+        }
+
+        const defensePinch = (pattern, _x, _y, color, depth = 0) => {
+            const points = []
+            let maxLen = 0
+            let point = null
+            for (let x = _x - 1; x < _x + 2 && x > -1 && x < c; x++) {
+                for (let y = _y - 1; y < _y + 2 && y > -1 && y < c; y++) {
+                    if (x === _x && y === _y) continue
+                    if (pattern[x * c + y] !== 0) continue
+                    const newPattern = clone(pattern)
+                    newPattern[x * c + y] = color
+                    const rst = defense(newPattern, x, y, color)
+
+                    if (depth === 1) {
+                        if (rst > 1) {
+                            console.log('rst ', rst, _x, _y)
+
+                            point = [_x, _y, rst.length]
+                        }
+                        continue
+                    }
+
+
+                    if (rst > 0) {
+                        const rst = defensePinch(newPattern, x, y, color, 1)
+                        points.push(rst)
+                    }
+
+                }
+            }
+            return depth === 0 ? points : point
+        }
+
+        const friendlyCount = (pattern, _x, _y, color) => {
+            let count = 0
+            for (let x = _x - 1; x < _x + 2 && x > -1 && x < c; x++) {
+                for (let y = _y - 1; y < _y + 2 && y > -1 && y < c; y++) {
+                    if (x === _x && y === _y) continue
+                    if (pattern[x * c + y] === color) count++
+                }
+            }
+            return count
+        }
+
+
+        const clone = (pattern) => Object.create(pattern)
+
+        const willWin = (pattern, color) => {
+            for (let x = 0, len = 3; x < len; x++) {
+                for (let y = 0, len = 3; y < len; y++) {
+                    if (pattern[x * 3 + y] !== 0) continue
+                    const newPattern = clone(pattern)
+                    newPattern[x * 3 + y] = color
+                    if (check(newPattern, color)) {
+                        return [x, y]
+                    }
+                }
+            }
+            return null
+        }
+
+        const bestChoice = (pattern, color) => {
+            let point = willWin(pattern, color)
+            if (point) return { point, result: 1 }
+
+            let result = -2 // 1:胜， 0:和，-1:败
+
+            for (let x = 0, len = 3; x < len; x++) {
+                for (let y = 0, len = 3; y < len; y++) {
+                    if (pattern[x * 3 + y] !== 0) continue
+                    const newPattern = clone(pattern)
+                    newPattern[x * 3 + y] = color
+
+                    let rst = bestChoice(newPattern, 3 - color).result
+                    if (-rst > result) {
+                        result = -rst
+                        point = [x, y]
+                    }
+
+                }
+            }
+            return {
+                point,
+                result: point ? result : 0
+            }
+        }
+
+        render(pattern)
+
+    </script>
+</body>
+
+</html>
