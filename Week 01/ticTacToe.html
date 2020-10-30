@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicTacToe</title>
+    <style>
+        #board {}
+
+        .cell {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 20px;
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="board"></div>
+    <script>
+        const arr = [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0]
+        ]
+
+        let color = 1
+        const pattern = arr.flat(1) // 不使用二维数组是为了方便clone
+        const board = document.getElementById('board')
+
+        const render = (pattern) => {
+            board.innerHTML = ''
+            for (let x = 0, len = 3; x < len; x++) {
+                for (let y = 0, len = 3; y < len; y++) {
+                    const v = pattern[x * 3 + y]
+                    const cell = document.createElement('div')
+                    cell.classList.add('cell')
+                    cell.addEventListener('click', () => { move(x, y) })
+                    cell.innerText =
+                        v === 1 ? '⭕️' :
+                            v === 2 ? '❌' : ''
+                    board.appendChild(cell)
+
+                }
+                board.appendChild(document.createElement('br'))
+            }
+        }
+
+        const check = (pattern, color) => {
+            {
+                // 行
+                for (let x = 0, len = 3; x < len; x++) {
+                    let isWin = true
+                    for (let y = 0, len = 3; y < len; y++) {
+                        if (pattern[x * 3 + y] !== color) isWin = false
+                    }
+                    if (isWin) return true
+                }
+                // 列
+                for (let y = 0, len = 3; y < len; y++) {
+                    let isWin = true
+                    for (let x = 0, len = 3; x < len; x++) {
+                        if (pattern[x * 3 + y] !== color) isWin = false
+                    }
+                    if (isWin) return true
+                }
+                // 正斜
+                {
+                    let isWin = true
+                    for (let i = 0, len = 3; i < len; i++) {
+                        if (pattern[i * 3 + i] !== color) isWin = false
+                    }
+                    if (isWin) return true
+                }
+                // 反斜
+                {
+                    for (let i = 0, len = 3; i < len; i++) {
+                        if (pattern[i * 3 + (2 - i)] !== color) return false
+                    }
+                    return true
+                }
+            }
+        }
+
+        const move = (x, y) => {
+            if (pattern[x * 3 + y] !== 0) return
+
+            pattern[x * 3 + y] = color
+            if (check(pattern, color)) {
+                console.log(`${color === 1 ? '⭕️' : '❌'} Win!!`)
+            }
+            if (willWin(pattern, color)) {
+                console.log(`${color === 1 ? '⭕️' : '❌'} will Win!!`)
+            }
+            color = 3 - color
+            render(pattern)
+        }
+
+        const clone = (pattern) => Object.create(pattern)
+
+        const willWin = (pattern, color) => {
+            for (let x = 0, len = 3; x < len; x++) {
+                for (let y = 0, len = 3; y < len; y++) {
+                    if (pattern[x * 3 + y] !== 0) continue
+                    const newPattern = clone(pattern)
+                    newPattern[x * 3 + y] = color
+                    if (check(newPattern, color)) {
+                        return true
+                    }
+                }
+            }
+            return false
+        }
+
+        render(pattern)
+
+    </script>
+</body>
+
+</html>
