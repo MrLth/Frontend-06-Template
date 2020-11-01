@@ -6,8 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TicTacToe</title>
     <style>
-        #board {}
-
         .cell {
             position: relative;
             display: inline-block;
@@ -56,8 +54,8 @@
         ], c = 15
 
         let color = 1
-        const aiColor = 2
-        const pattern = arr.flat(1) // 不使用二维数组是为了方便clone
+        const aiColor = 3 - color
+        let pattern = arr.flat(1) // 不使用二维数组是为了方便clone
 
         const goodPoint = Array.from(arr) // 0: 无子， 1：有子， 2：有益点
 
@@ -161,6 +159,7 @@
         }
 
         const move = (x, y) => {
+            console.log(x, y)
             if (pattern[x * c + y] !== 0) return
 
             pattern[x * c + y] = color
@@ -172,50 +171,12 @@
             }
 
             updGoodPoint(x, y, color)
-
-
-            // color = 3 - color
             render(pattern)
-
             aiTic(pattern, x, y)
         }
 
-        const getPoint = (pattern, _x, _y, color) => {
-            point = tryToWin(pattern, color)
-            if (point) {
-                console.log('tryToWin')
-                return point
-            }
-
-
-            point = notLost(pattern, _x, _y, 3 - color)
-            if (point) {
-                console.log('notLost')
-                return point
-            }
-
-
-            point = handleDefense(pattern, _x, _y, 3 - color)
-            if (point) {
-                console.log('defense')
-                return point
-            }
-
-            point = attack(pattern, color)
-            if (point) {
-                console.log('attack')
-                return point
-            }
-
-            console.log('random')
-            return randomTic(pattern, _x, _y)
-        }
-
         const aiTic = (pattern, _x, _y) => {
-
             const [x, y] = getPoint(pattern, _x, _y, aiColor)
-
-            console.log('aiTic', x, y);
 
             pattern[x * c + y] = aiColor
 
@@ -226,9 +187,73 @@
             updGoodPoint(x, y, aiColor)
 
             render(pattern)
-
         }
 
+        let remember = null
+        const getPoint = (pattern, _x, _y, color) => {
+            point = tryToWin(pattern, color)
+            if (point) {
+                console.log('tryToWin', point[0], point[1])
+                return point
+            }
+
+            const [arr5, arr4, arr3] = defense(pattern, _x, _y, 3 - color)
+
+            console.log('need defense points:', arr5, arr4, arr3)
+
+            point = notLost(pattern, arr5, 3 - color)
+            if (point) {
+                console.log('notLost', point[0], point[1])
+                return point
+            }
+
+
+            if (candidate5.length !== 0) {
+                point = bestChoice(pattern, color, candidate5)
+                const temp = defenseArr4(pattern, arr4, 3 - color)
+                if (temp) remember = temp
+                console.log('attack5', point[0], point[1], candidate5)
+                return point
+            }
+
+            point = defenseArr4(pattern, arr4, color)
+            if (point) {
+                console.log('defense4', point[0], point[1])
+                return point
+            }
+
+            if (candidate4.length !== 0) {
+                point = bestChoice(pattern, color, candidate4)
+                const temp = defenseArr3(pattern, arr3,  color)
+                if (temp) remember = temp
+                console.log('attack4', point[0], point[1])
+                return point
+            }
+
+            point = defenseArr3(pattern, arr3, 3 - color)
+            if (point) {
+                console.log('defense3', point[0], point[1])
+                return point
+            }
+
+            if (remember) {
+                console.log('remember', remember[0], remember[1])
+                return remember
+                remember = null
+            }
+
+            point = attack(pattern, color)
+            if (point) {
+                console.log('attack', point[0], point[1])
+                return point
+            }
+
+            point = randomTic(pattern, _x, _y)
+            console.log('random', point[0], point[1])
+            return point
+        }
+
+        // Ai不知道应该怎么下的时候，在对方上次落子的周围随机下
         const randomTic = (pattern, _x, _y) => {
             const points = []
             for (let x = _x - 1; x < _x + 2 && x > -1 && x < c; x++) {
@@ -237,9 +262,10 @@
                     points.push([x, y])
                 }
             }
-            return points[Math.floor(Math.random()*points.length)]
+            return points[Math.floor(Math.random() * points.length)]
         }
 
+        // 维护了一个表示棋盘状态的数组，收集哪些地方AI可以下，每次落子的时候都会更新
         const updGoodPoint = (_x, _y, color) => {
             goodPoint[_x][_y] = 1
             if (color === aiColor) {
@@ -254,105 +280,103 @@
 
 
         let nextCbArr = []
-        let candidate = []
-        const attack = (pattern, color) => {
-            let i = 3
-            while (i--) {
-                const copyCbArr = nextCbArr
-                nextCbArr = []
-                for (const obj of copyCbArr) {
-                    const rst = obj.fn()
-                    if (rst) return rst
-                }
-            }
-            return null
-        }
+        let candidate5 = []
+        let candidate4 = []
 
-        const tryToWin = (pattern, color) => {
-            nextCbArr = []
-            candidate = []
-            for (let x = 0; x < c; x++) {
-                for (let y = 0; y < c; y++) {
-                    if (goodPoint[x][y] !== 2) continue
-
-
-
-                    const arr5 = incomeCompute(pattern, x, y, color, [x, y])
-
-                    if (check(pattern, x, y, color)) return [x, y]
-
-                    if (arr5 === null) continue
-                    for (const [x, y] of arr5) {
-                        const newPattern = clone(pattern)
-                        newPattern[x * c + y] = color
-
-                        candidate.push([x, y])
-                    }
-
-                }
-            }
-
-            return null
-        }
-
+        // 从提供的队列中，选出最佳落点
+        // 1. 能连通两个3连，组成2个4连的必胜落点
+        // 2. 能同时阻止对方布局的落点
+        // 3. 周围可互动友军最多的点落点
         const bestChoice = (pattern, color, pointArr) => {
-            let maxFriendlyCount = 0, point = null
+            let maxFriendlyCount = 0, point = null, arr5Point = null, arr4Point = null, arr3Point = null
             for (const [x, y] of pointArr) {
-                const count = friendlyCount(pattern, x, y, color)
+                const rst = defense(pattern, x, y, color)
+                const count = rst[4]
+                const rstArr5 = rst[0]
+
+
+                if (rstArr5.length > 1) return [x, y]
+
+                const rst1 = defense(pattern, x, y, 3 - color)
+
+                const [arr5, arr4] = rst1
+                let count1 = 0
+                if (arr5.length > 0 && rst1[4] > count1) {
+                    arr5Point = [x, y]
+                    count1 = rst1[4]
+                }
+                if (arr4.length > 0) {
+                    arr4Point = [x, y];
+                    continue
+                }
 
                 if (count > maxFriendlyCount) {
                     maxFriendlyCount = count
                     point = [x, y]
                 }
             }
+            if (arr5Point) return arr5Point
+            if (arr4Point) return arr4Point
             return point
         }
 
+        // 收益计算，Ai进攻时从GoodPoint中选出收益最大的点
         const incomeCompute = (pattern, _x, _y, color, _point) => {
             const newPattern = clone(pattern)
             newPattern[_x * c + _y] = color
-            const [arr5, arr4] = defense(newPattern, _x, _y, color)
+            const [arr5, arr4, arr3] = defense(newPattern, _x, _y, color)
 
             if (arr5.length > 0) {
-                return arr5
+                return [5, arr5]
+            }
+
+            if (arr4.length > 0) {
+                return [4, arr4]
             }
 
 
-            if (arr4.length > 0) {
-                nextCbArr.push({
-
-                    fn: () => {
-                        if (arr4.filter(([x, y]) => {
-
-                            const rst = incomeCompute(newPattern, x, y, color, _point)
-                            return rst !== null
-
-                        }).length > 0) {
-                            return _point
+            if (arr3.length > 0) {
+                const point = defenseArr3(newPattern, arr3, color)
+                nextCbArr.push(
+                    point !== null
+                        ? {
+                            fn: () => [5, _point],
+                            x: _point[0],
+                            y: _point[1]
                         }
-                        return null
-                    },
-                    x: _point[0],
-                    y: _point[1]
-                }
+                        : {
+                            fn: () => {
+                                let maxStatus = 0
+                                for (const [x, y] of arr3) {
+                                    const rst = incomeCompute(newPattern, x, y, color, _point)
+                                    if (rst === null) continue
+                                    if (maxStatus < rst[0]) maxStatus = rst[0]
+                                }
 
-                )
+                                if (maxStatus) return [maxStatus, _point]
+                                else return null
+                            },
+                            x: _point[0],
+                            y: _point[1]
+                        })
             }
 
             return null
         }
 
+        // 计算一个点的各种信息，返回需要防御的点，同时提供进攻时的收益计算
         const defense = (pattern, _x, _y, color) => {
 
             const arr5 = []
             const arr4 = []
+            const arr3 = []
             let directionCount = 0
+            let totalCount = 0
 
             const defenseCol = () => {
                 const candidate1 = []
                 const candidate2 = []
-
-                let count = 1
+                let count = 1, emptyCount = 0, closeCount = 0, lastV
                 for (let x = _x + 1; x < c; x++) {
                     const v = pattern[x * c + _y]
                     if (v === color) {
@@ -360,16 +384,20 @@
                         continue
                     }
 
-                    if (v === 0) {
-                        if (candidate1.length === 0) {
-                            count++
-                            candidate1.push([x, _y])
-                            continue
-                        }
+                    if (v === 3 - color) {
+                        if (lastV !== 0) closeCount++
+                        break
                     }
+                    if (lastV === v) break
+                    lastV = v
 
-                    break
+                    if (v === 0) {
+                        emptyCount++
+                        if (candidate1.length === 0)
+                            candidate1.push([x, _y])
+                    }
                 }
+                lastV = undefined
                 for (let x = _x - 1; x > -1; x--) {
                     const v = pattern[x * c + _y]
                     if (v === color) {
@@ -377,31 +405,39 @@
                         continue
                     }
 
-                    if (v === 0) {
-                        if (candidate2.length === 0) {
-                            count++
-                            candidate2.push([x, _y])
-                            continue
-                        }
+                    if (v === 3 - color) {
+                        if (lastV !== 0) closeCount++
+                        break
                     }
+                    if (lastV === v) break
+                    lastV = v
 
-                    break
+                    if (v === 0) {
+                        emptyCount++
+                        if (candidate2.length === 0)
+                            candidate2.push([x, _y])
+                    }
                 }
 
 
+                totalCount += count + emptyCount * 0.5
 
-                if (count > 4) {
+                if (count >= 4 && emptyCount >= 0) {
                     arr5.push(...candidate1, ...candidate2)
                     directionCount++
-                } else if (count > 3)
+                } else if (count >= 3 && closeCount === 0) {
                     arr4.push(...candidate1, ...candidate2)
+                    directionCount++
+                } else if (count >= 2)
+                    arr3.push(...candidate1, ...candidate2)
 
             }
 
             const defenseRow = () => {
                 const candidate1 = []
                 const candidate2 = []
-                let count = 1
+                let count = 1, emptyCount = 0, closeCount = 0, lastV
+
                 for (let y = _y + 1; y < c; y++) {
                     const v = pattern[_x * c + y]
                     if (v === color) {
@@ -409,16 +445,21 @@
                         continue
                     }
 
-                    if (v === 0) {
-                        if (candidate1.length === 0) {
-                            count++
-                            candidate1.push([_x, y])
-                            continue
-                        }
-                    }
+                    if (v === 3 - color) {
+                        if (lastV !== 0) closeCount++
 
-                    break
+                        break
+                    }
+                    if (lastV === v) break
+                    lastV = v
+
+                    if (v === 0) {
+                        emptyCount++
+                        if (candidate1.length === 0)
+                            candidate1.push([_x, y])
+                    }
                 }
+                lastV = undefined
                 for (let y = _y - 1; y > -1; y--) {
                     const v = pattern[_x * c + y]
                     if (v === color) {
@@ -426,29 +467,36 @@
                         continue
                     }
 
-                    if (v === 0) {
-                        if (candidate2.length === 0) {
-                            count++
-                            candidate2.push([_x, y])
-                            continue
-                        }
+                    if (v === 3 - color) {
+                        if (lastV !== 0) closeCount++
+
+                        break
                     }
+                    if (lastV === v) break
+                    lastV = v
 
-                    break
+                    if (v === 0) {
+                        emptyCount++
+                        if (candidate2.length === 0)
+                            candidate2.push([_x, y])
+                    }
                 }
+                totalCount += count + emptyCount * 0.5
 
-
-                if (count > 4) {
+                if (count >= 4 && emptyCount >= 0) {
                     arr5.push(...candidate1, ...candidate2)
                     directionCount++
-                } else if (count > 3)
+                } else if (count >= 3 && closeCount === 0) {
                     arr4.push(...candidate1, ...candidate2)
+                    directionCount++
+                } else if (count >= 2)
+                    arr3.push(...candidate1, ...candidate2)
             }
 
             const defenseForwardSlash = () => {
                 const candidate1 = []
                 const candidate2 = []
-                let count = 1
+                let count = 1, emptyCount = 0, closeCount = 0, lastV
                 for (let y = _y - 1, x = _x + 1; y > -1 && x < c; y--, x++) {
                     const v = pattern[x * c + y]
                     if (v === color) {
@@ -456,16 +504,21 @@
                         continue
                     }
 
-                    if (v === 0) {
-                        if (candidate1.length === 0) {
-                            count++
-                            candidate1.push([x, y])
-                            continue
-                        }
-                    }
+                    if (v === 3 - color) {
+                        if (lastV !== 0) closeCount++
 
-                    break
+                        break
+                    }
+                    if (lastV === v) break
+                    lastV = v
+
+                    if (v === 0) {
+                        emptyCount++
+                        if (candidate1.length === 0)
+                            candidate1.push([x, y])
+                    }
                 }
+                lastV = undefined
                 for (let x = _x - 1, y = _y + 1; y < c && x > -1; y++, x--) {
                     const v = pattern[x * c + y]
                     if (v === color) {
@@ -473,28 +526,35 @@
                         continue
                     }
 
-                    if (v === 0) {
-                        if (candidate2.length === 0) {
-                            count++
-                            candidate2.push([x, y])
-                            continue
-                        }
+                    if (v === 3 - color) {
+                        if (lastV !== 0) closeCount++
+
+                        break
                     }
+                    if (lastV === v) break
+                    lastV = v
 
-                    break
+                    if (v === 0) {
+                        emptyCount++
+                        if (candidate2.length === 0)
+                            candidate2.push([x, y])
+                    }
                 }
-
-                if (count > 4) {
+                totalCount += count + emptyCount * 0.5
+                if (count >= 4 && emptyCount >= 0) {
                     arr5.push(...candidate1, ...candidate2)
                     directionCount++
-                } else if (count > 3)
+                } else if (count >= 3 && closeCount === 0) {
                     arr4.push(...candidate1, ...candidate2)
+                    directionCount++
+                } else if (count >= 2)
+                    arr3.push(...candidate1, ...candidate2)
             }
 
             const defenseBackslash = () => {
                 const candidate1 = []
                 const candidate2 = []
-                let count = 1
+                let count = 1, emptyCount = 0, closeCount = 0, lastV
                 for (let y = _y + 1, x = _x + 1; y < c && x < c; y++, x++) {
                     const v = pattern[x * c + y]
                     if (v === color) {
@@ -502,16 +562,21 @@
                         continue
                     }
 
-                    if (v === 0) {
-                        if (candidate1.length === 0) {
-                            count++
-                            candidate1.push([x, y])
-                            continue
-                        }
-                    }
+                    if (v === 3 - color) {
+                        if (lastV !== 0) closeCount++
 
-                    break
+                        break
+                    }
+                    if (lastV === v) break
+                    lastV = v
+
+                    if (v === 0) {
+                        emptyCount++
+                        if (candidate1.length === 0)
+                            candidate1.push([x, y])
+                    }
                 }
+                lastV = undefined
                 for (let x = _x - 1, y = _y - 1; y > -1 && x > -1; y--, x--) {
                     const v = pattern[x * c + y]
                     if (v === color) {
@@ -519,23 +584,29 @@
                         continue
                     }
 
-                    if (v === 0) {
-                        if (candidate2.length === 0) {
-                            count++
-                            candidate2.push([x, y])
-                            continue
-                        }
+                    if (v === 3 - color) {
+                        if (lastV !== 0) closeCount++
+
+                        break
                     }
+                    if (lastV === v) break
+                    lastV = v
 
-                    break
+                    if (v === 0) {
+                        emptyCount++
+                        if (candidate2.length === 0)
+                            candidate2.push([x, y])
+                    }
                 }
-
-
-                if (count > 4) {
+                totalCount += count + emptyCount * 0.5
+                if (count >= 4 && emptyCount >= 0) {
                     arr5.push(...candidate1, ...candidate2)
                     directionCount++
-                } else if (count > 3)
+                } else if (count >= 3 && closeCount === 0 && emptyCount < 4) {
                     arr4.push(...candidate1, ...candidate2)
+                    directionCount++
+                } else if (count >= 2)
+                    arr3.push(...candidate1, ...candidate2)
             }
 
 
@@ -544,13 +615,38 @@
             defenseForwardSlash()
             defenseBackslash()
 
-            return [arr5, arr4, directionCount]
+            return [arr5, arr4, arr3, directionCount, totalCount]
         }
 
-        const notLost = (pattern, _x, _y, color) => {
-            const [arr5] = defense(pattern, _x, _y, color)
+        // Ai选择优先级最高，找出场上已经4连，能够直接赢的点
+        const tryToWin = (pattern, color) => {
+            nextCbArr = []
+            candidate5 = []
+            candidate4 = []
 
-            console.log('notLost arr5', arr5)
+            for (let x = 0; x < c; x++) {
+                for (let y = 0; y < c; y++) {
+                    if (goodPoint[x][y] !== 2) continue
+
+                    if (check(pattern, x, y, color)) return [x, y]
+
+                    const rst = incomeCompute(pattern, x, y, color, [x, y])
+
+                    if (rst === null) continue
+                    const [status] = rst
+
+                    if (status === 5)
+                        candidate5.push([x, y])
+                    else if (status === 4)
+                        candidate4.push([x, y])
+                }
+            }
+
+            return null
+        }
+
+        // 找出场上已经4连，能够让对方赢的点
+        const notLost = (pattern, arr5, color) => {
             for (const [x, y] of arr5) {
                 const newPattern = clone(pattern)
                 newPattern[x * c + y] = color
@@ -559,80 +655,50 @@
             return null
         }
 
-        const handleDefense = (pattern, _x, _y, color) => {
-            const [arr5, arr4] = defense(pattern, _x, _y, color)
-            if (arr5.length > 0) {
-                return bestChoice(pattern, color, arr5)
-            }
+        // 找出场上对方已经3连，必须防御的点
+        const defenseArr4 = (pattern, arr4, color) => {
+            if (arr4.length === 0) return null
 
-            if (candidate.length > 0) {
-                console.log('counterattack')
-                return bestChoice(pattern, color, candidate)
-            }
+            return bestChoice(pattern, color, arr4)
+        }
 
-            if (arr4.length > 0) {
-                for (const v of arr4) {
-                    const [x, y] = v
-                    const newPattern = clone(pattern)
-                    newPattern[x * c + y] = color
-                    const directionCount = defense(newPattern, x, y, color)[2]
-                    if (directionCount > 1) {
-                        return [x, y]
-                    }
+        // 找出场上对方两个2连夹击，一旦3连无法防御的点
+        const defenseArr3 = (pattern, arr3, color) => {
+            if (arr3.length === 0) return null
+
+            for (const [x, y] of arr3) {
+                const newPattern = clone(pattern)
+                newPattern[x * c + y] =3- color
+                const directionCount = defense(newPattern, x, y, 3-color)[3]
+                if (directionCount > 1) {
+                    return [x, y]
                 }
             }
 
             return null
         }
 
-
-        const defensePinch = (pattern, _x, _y, color, depth = 0) => {
-            const points = []
-            let maxLen = 0
-            let point = null
-            for (let x = _x - 1; x < _x + 2 && x > -1 && x < c; x++) {
-                for (let y = _y - 1; y < _y + 2 && y > -1 && y < c; y++) {
-                    if (x === _x && y === _y) continue
-                    if (pattern[x * c + y] !== 0) continue
-                    const newPattern = clone(pattern)
-                    newPattern[x * c + y] = color
-                    const rst = defense(newPattern, x, y, color)
-
-                    if (depth === 1) {
-                        if (rst > 1) {
-                            console.log('rst ', rst, _x, _y)
-
-                            point = [_x, _y, rst.length]
-                        }
-                        continue
-                    }
-
-
-                    if (rst > 0) {
-                        const rst = defensePinch(newPattern, x, y, color, 1)
-                        points.push(rst)
-                    }
-
+        // Ai 进攻逻辑
+        const attack = (pattern, color) => {
+            let i = 3, max = 0, point = null
+            while (i--) {
+                const copyCbArr = nextCbArr
+                nextCbArr = []
+                for (const obj of copyCbArr) {
+                    const rst = obj.fn()
+                    if (rst === null) continue
+                    if (rst[0] === 5) return rst[1]
+                    if (rst[0] === 4) point = rst[1]
                 }
+                if (point) return point
             }
-            return depth === 0 ? points : point
+            return null
         }
-
-        const friendlyCount = (pattern, _x, _y, color) => {
-            let count = 0
-            for (let x = _x - 1; x < _x + 2 && x > -1 && x < c; x++) {
-                for (let y = _y - 1; y < _y + 2 && y > -1 && y < c; y++) {
-                    if (x === _x && y === _y) continue
-                    if (pattern[x * c + y] === color) count++
-                }
-            }
-            return count
-        }
-
 
         const clone = (pattern) => Object.create(pattern)
 
         render(pattern)
+        if (aiColor === 1) aiTic(pattern, Math.floor(c / 2), Math.ceil(c / 2))
 
     </script>
 </body>
