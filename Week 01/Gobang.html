@@ -53,7 +53,7 @@
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ], c = 15
 
-        let color = 1
+        let color = 2
         const aiColor = 3 - color
         let pattern = arr.flat(1) // 不使用二维数组是为了方便clone
 
@@ -221,10 +221,16 @@
             }
 
             if (remember.length > 0) {
-                point = bestChoice(pattern, 3 - color, remember)
-                remember = []
-                console.log('remember', point[0], point[1])
-                return point
+                remember = remember.filter(([x, y]) => pattern[x * c + y] === 0)
+                if (remember.length > 0) {
+
+                    point = bestChoice(pattern, 3 - color, remember)
+
+                    const i = remember.findIndex(([x, y]) => x === point[0] && y === point[1])
+                    if (i !== -1) remember.splice(i, 1)
+                    console.log('remember', point[0], point[1])
+                    return point
+                }
             }
 
             if (candidate4.length !== 0) {
@@ -240,7 +246,7 @@
             }
 
             point = randomTic(pattern, _x, _y)
-            point = [5, 6]
+            // point = [5, 6]
             console.log('random', point[0], point[1])
             return point
         }
