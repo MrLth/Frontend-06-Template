@@ -238,8 +238,9 @@
 
             if (remember) {
                 console.log('remember', remember[0], remember[1])
+                point = remember
                 remember = null
-                return remember
+                return point
             }
 
             point = attack(pattern, color)
