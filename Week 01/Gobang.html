@@ -223,11 +223,11 @@
             if (remember.length > 0) {
                 remember = remember.filter(([x, y]) => pattern[x * c + y] === 0)
                 if (remember.length > 0) {
-
                     point = bestChoice(pattern, 3 - color, remember)
-
+                    // 从remember中删除point，实际不删也不会影响下次计算，上面已经做了过滤
                     const i = remember.findIndex(([x, y]) => x === point[0] && y === point[1])
                     if (i !== -1) remember.splice(i, 1)
+
                     console.log('remember', point[0], point[1])
                     return point
                 }
@@ -297,13 +297,12 @@
                 const count = rst[4]
                 const rstArr5 = rst[0]
 
-                // 组四连并且两边空
+                // 组成四连并且两边都未闭合
                 if (rst[5]) return [x, y]
 
-                // 组成三个三连
+                // 组成两个三连
                 if (rst[3] > 1) return [x, y]
 
-                console.log('rst', x, y, rst)
                 if (rstArr5.length > 1) {
                     winPoint = [x, y]
                     console.log('rstArr5.length > 1', [x, y], count)
