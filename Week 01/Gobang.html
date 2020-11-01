@@ -189,8 +189,7 @@
             render(pattern)
         }
 
-        let remember4 = []
-        let remember3 = []
+        let remember = []
         const getPoint = (pattern, _x, _y, color) => {
             point = tryToWin(pattern, color)
             if (point) {
@@ -209,58 +208,29 @@
             }
 
 
-            if (candidate5.length !== 0) {
+            let temp4 = defenseArr4(pattern, arr4, color)
+            let temp3 = defenseArr3(pattern, arr3, color)
+
+            if (temp4) remember.push(temp4)
+            if (temp3) remember.push(temp3)
+
+            if (candidate5.length > 0) {
                 point = bestChoice(pattern, color, candidate5)
-                const temp = defenseArr4(pattern, arr4, color)
-                if (temp) remember4.push(temp)
                 console.log('attack5', point[0], point[1], candidate5)
                 return point
             }
 
-            point = defenseArr4(pattern, arr4, color)
-            if (point) {
-                console.log('defense4', point[0], point[1])
+            if (remember.length > 0) {
+                point = bestChoice(pattern, 3 - color, remember)
+                remember = []
+                console.log('remember', point[0], point[1])
                 return point
-            }
-
-            if (remember4.length > 0) {
-                do {
-                    point = remember4.shift()
-                    if (point) {
-                        const [x, y] = point
-                        if (pattern[x * c + y] === 0) {
-                            console.log('remember4', point[0], point[1])
-                            return point
-                        }
-                    }
-                } while (remember4.length > 0);
             }
 
             if (candidate4.length !== 0) {
                 point = bestChoice(pattern, color, candidate4)
-                const temp = defenseArr3(pattern, arr3, color)
-                if (temp) remember3.push(temp)
                 console.log('attack4', point[0], point[1], candidate4)
                 return point
-            }
-
-            point = defenseArr3(pattern, arr3, 3 - color)
-            if (point) {
-                console.log('defense3', point[0], point[1])
-                return point
-            }
-
-            if (remember3.length > 0) {
-                do {
-                    point = remember3.shift()
-                    if (point) {
-                        const [x, y] = point
-                        if (pattern[x * c + y] === 0) {
-                            console.log('remember3', point[0], point[1])
-                            return point
-                        }
-                    }
-                } while (remember3.length > 0);
             }
 
             point = attack(pattern, color)
@@ -269,8 +239,8 @@
                 return point
             }
 
-            // point = randomTic(pattern, _x, _y)
-            point = [6, 7]
+            point = randomTic(pattern, _x, _y)
+            point = [5, 6]
             console.log('random', point[0], point[1])
             return point
         }
@@ -329,10 +299,9 @@
 
                 console.log('rst', x, y, rst)
                 if (rstArr5.length > 1) {
-                    // winPoint = [x, y]
+                    winPoint = [x, y]
                     console.log('rstArr5.length > 1', [x, y], count)
                     // if (rst[5]) return winPoint
-                    return [x, y]
                 }
 
                 const rst1 = defense(pattern, x, y, 3 - color)
@@ -353,7 +322,7 @@
                     point = [x, y]
                 }
             }
-            // if (winPoint) return winPoint
+            if (winPoint) return winPoint
             if (arr5Point) return arr5Point
             if (arr4Point) return arr4Point
             return point
@@ -644,7 +613,6 @@
 
                     if (rst === null) continue
                     const [status] = rst
-                    console.log('trytoWin', status, x, y)
 
                     if (status === 5)
                         candidate5.push([x, y])
@@ -680,14 +648,23 @@
             for (const [x, y] of arr3) {
                 const newPattern = clone(pattern)
                 newPattern[x * c + y] = 3 - color
-                const directionCount = defense(newPattern, x, y, 3 - color)[3]
-                if (directionCount > 1) {
+                const rst = defense(newPattern, x, y, 3 - color)
+                if (rst[3] > 1) {
                     return [x, y]
+                } else {
+                    for (const [x1, y1] of rst[2]) {
+                        const p = clone(newPattern)
+                        p[x1 * c + y1] = 3 - color
+                        if (defense(p, x1, y1, 3 - color)[3] > 1) {
+                            return [x, y]
+                        }
+                    }
                 }
             }
 
             return null
         }
+
 
         // Ai 进攻逻辑
         const attack = (pattern, color) => {
