@@ -62,7 +62,7 @@ const render = (map) => {
                 }
             })
             cell.addEventListener('click', () => {
-                console.log(x, y)
+                console.log(x, y, map[x * c + y])
             })
             fragment.appendChild(cell)
         }
@@ -77,6 +77,7 @@ const sleep = delay => new Promise(resolve => setTimeout(resolve, delay))
 class PathQueue {
     queue = []
     map = null
+    refresh = false
 
     constructor(map, start) {
         this.queue.push(start)
@@ -87,29 +88,41 @@ class PathQueue {
         if (x >= c || x < 0) return
         if (y >= c || y < 0) return
         if (this.map[x * c + y]) {
-            // if (typeof this.map[x * c + y] === 'object')
-            // this.map[x * c + y] = info
+            // 撞墙了
+            if (this.map[x * c + y] === 1) {
+                // const [x1, y1] = info.position
+                // console.log('x1, y1', x1, y1);
+                return
+            }
+
+            const oldInfo = this.map[x * c + y]
+            if (oldInfo.g > info.g)
+                this.map[x * c + y] = info
             return
         }
         this.map[x * c + y] = info
 
         domMap.childNodes[x * brC + y].style.backgroundColor = '#faa'
-        this.queue.push([x, y])
+        this.queue.push([x, y, info])
     }
 
-    shift(computeCb) {
+    shift(F) {
         let minI = 0
-        let minV = computeCb(this.queue[0])
+        let minV = F(this.queue[0])
         const len = this.length
         for (let i = 1; i < len; i++) {
-            const v = computeCb(this.queue[i])
+            let v = F(this.queue[i])
             if (v < minV) {
                 minV = v
                 minI = i
             }
         }
+
         [this.queue[minI], this.queue[len - 1]] = [this.queue[len - 1], this.queue[minI]]
-        return this.queue.pop()
+
+        const rst = this.queue.pop()
+
+        return rst
     }
 
     get length() {
@@ -119,24 +132,26 @@ class PathQueue {
 
 
 const path = async (map, start, end) => {
-    // 广度优先搜索使用队列，深度优先搜索使用栈
-    const queue = new PathQueue(map, start)
-    window.queue = queue
-    map[start[0] * c + start[1]] = {
+    const info = {
         position: start,
-        count: 0
+        g: 0,
+        priority: false
     }
+    // 广度优先搜索使用队列，深度优先搜索使用栈
+    const queue = new PathQueue(map, [...start, info])
+    window.queue = queue
+    map[start[0] * c + start[1]] = info
 
-    const cb = ([x, y]) => {
-        return ((end[0] - x) ** 2 + (end[1] - y) ** 2)
-        return ((end[0] - x) ** 2 + (end[1] - y) ** 2) ** 0.5 + map[x * c + y].count
+    const F = ([x, y, info]) => {
+        // return ((end[0] - x) ** 2 + (end[1] - y) ** 2)
+        return ((end[0] - x) ** 2 + (end[1] - y) ** 2) ** 0.5 + info.g
     }
     while (queue.length) {
-        const position = queue.shift(cb)
+        const position = queue.shift(F)
         let [x, y] = position
         await sleep(0)
         if (x === end[0] && y === end[1]) {
-            console.log('count', map[x * c + y].count);
+            console.log('count', map[x * c + y].g);
             domMap.childNodes[x * brC + y].style.backgroundColor = '#0f0'
             while (x !== start[0] || y !== start[1]) {
                 [x, y] = map[x * c + y].position
@@ -147,17 +162,16 @@ const path = async (map, start, end) => {
             return true
         }
 
-        let count = map[x * c + y].count + 1
+        const g1 = map[x * c + y].g + 1, g2 = g1 + 0.4
 
-
-        queue.insert(x + 1, y, { position, count })
-        queue.insert(x - 1, y, { position, count })
-        queue.insert(x, y + 1, { position, count })
-        queue.insert(x, y - 1, { position, count })
-        queue.insert(x - 1, y - 1, { position, count })
-        queue.insert(x + 1, y - 1, { position, count })
-        queue.insert(x + 1, y + 1, { position, count })
-        queue.insert(x - 1, y + 1, { position, count })
+        queue.insert(x + 1, y, { position, g: g1 })
+        queue.insert(x - 1, y, { position, g: g1 })
+        queue.insert(x, y + 1, { position, g: g1 })
+        queue.insert(x, y - 1, { position, g: g1 })
+        queue.insert(x - 1, y - 1, { position, g: g2 })
+        queue.insert(x + 1, y - 1, { position, g: g2 })
+        queue.insert(x + 1, y + 1, { position, g: g2 })
+        queue.insert(x - 1, y + 1, { position, g: g2 })
     }
 
     return false
