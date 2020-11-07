@@ -31,6 +31,7 @@
         ]
 
         let color = 1
+        const aiColor = 2
         const pattern = arr.flat(1) // 不使用二维数组是为了方便clone
         const board = document.getElementById('board')
 
@@ -98,9 +99,15 @@
             if (willWin(pattern, color)) {
                 console.log(`${color === 1 ? '⭕️' : '❌'} will Win!!`)
             }
-            color = 3 - color
+
+            const rst = bestChoice(pattern, aiColor)
+            if (rst.point) {
+                pattern[rst.point[0] * 3 + rst.point[1]] = aiColor
+            }
             render(pattern)
         }
+
+
 
         const clone = (pattern) => Object.create(pattern)
 
@@ -111,11 +118,37 @@
                     const newPattern = clone(pattern)
                     newPattern[x * 3 + y] = color
                     if (check(newPattern, color)) {
-                        return true
+                        return [x, y]
                     }
                 }
             }
-            return false
+            return null
+        }
+
+        const bestChoice = (pattern, color) => {
+            let point = willWin(pattern, color)
+            if (point) return { point, result: 1 }
+
+            let result = -2 // 1:胜， 0:和，-1:败
+
+            for (let x = 0, len = 3; x < len; x++) {
+                for (let y = 0, len = 3; y < len; y++) {
+                    if (pattern[x * 3 + y] !== 0) continue
+                    const newPattern = clone(pattern)
+                    newPattern[x * 3 + y] = color
+
+                    let rst = bestChoice(newPattern, 3 - color).result
+                    if (-rst > result) {
+                        result = -rst
+                        point = [x, y]
+                    }
+
+                }
+            }
+            return {
+                point,
+                result: point ? result : 0
+            }
         }
 
         render(pattern)
