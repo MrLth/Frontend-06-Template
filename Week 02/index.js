@@ -177,8 +177,8 @@ const path = async (map, start, end) => {
     // const queue = new PathQueue([...start, startInfo], F1)
     // const queue1 = new PathQueue([...end, endInfo], F2)
 
-    const queue = new BinaryHeap([...start, startInfo], (a, b) => (F1(b) - F1(a)))
-    const queue1 = new BinaryHeap([...end, endInfo], (a, b) => (F2(b) - F2(a)))
+    const queue = new BinaryHeap([...start, startInfo], (a, b) => (F1(a) - F1(b)))
+    const queue1 = new BinaryHeap([...end, endInfo], (a, b) => (F2(a) - F2(b)))
 
     startInfo.queue = queue
     endInfo.queue = queue1

@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2020-11-08 16:06:36
- * @LastEditTime: 2020-11-08 18:51:55
+ * @LastEditTime: 2020-11-08 20:12:08
  * @Description: file content
  */
 class BinaryHeap {
@@ -24,13 +24,13 @@ class BinaryHeap {
             li = 2 * i
             ri = li + 1
 
-            if (li < len && this.compare(this.queue[i], this.queue[li]) < 0) {
+            if (ri < len && this.compare(this.queue[ri], this.queue[li]) < 0) {
+                /*minI*/li = ri
+            }
+
+            if (li < len && this.compare(this.queue[li], this.queue[i]) < 0) {
                 temp = this.queue[i], this.queue[i] = this.queue[li], this.queue[li] = temp
                 this.updQueue.push(li)
-            }
-            if (ri < len && this.compare(this.queue[i], this.queue[ri]) < 0) {
-                temp = this.queue[i], this.queue[i] = this.queue[ri], this.queue[ri] = temp
-                this.updQueue.push(ri)
             }
         }
     }
@@ -44,7 +44,7 @@ class BinaryHeap {
 
             pi = Math.floor(i / 2)
 
-            if (pi > 0 && this.compare(this.queue[i], this.queue[pi]) > 0) {
+            if (pi > 0 && this.compare(this.queue[pi], this.queue[i]) > 0) {
                 temp = this.queue[i], this.queue[i] = this.queue[pi], this.queue[pi] = temp
                 this.updQueue.push(pi)
             }
