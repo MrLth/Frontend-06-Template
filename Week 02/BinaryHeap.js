@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2020-11-08 16:06:36
- * @LastEditTime: 2020-11-08 20:12:08
+ * @LastEditTime: 2020-11-08 20:23:39
  * @Description: file content
  */
 class BinaryHeap {
@@ -28,7 +28,7 @@ class BinaryHeap {
                 /*minI*/li = ri
             }
 
-            if (li < len && this.compare(this.queue[li], this.queue[i]) < 0) {
+            if (/*minI*/li < len && this.compare(this.queue[li], this.queue[i]) < 0) {
                 temp = this.queue[i], this.queue[i] = this.queue[li], this.queue[li] = temp
                 this.updQueue.push(li)
             }
