@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./index.js"></script>
+</head>
+
+<body>
+    <script>
+        function* tokenize(str) {
+            const regexp = /([0-9\.]+)|([\t ]+)|([\n\r]+)|(\+)|(\-)|(\*)|(\/)/g
+            const dict = ['number', 'whitespace', 'lineTerminator', '+', '-', '*', '/']
+            const dictLen = dict.length
+            let lastIndex = 0
+            while (true) {
+                lastIndex = regexp.lastIndex
+                const rst = regexp.exec(str)
+
+                if (!rst) break;
+
+                // RegExp.lastMatch 是非标准的
+                if (lastIndex + RegExp.lastMatch.length < regexp.lastIndex) throw new Error('tokenize failed')
+
+                const token = {}
+
+
+                for (let i = 0; i < dictLen; i++) {
+                    if (rst[i + 1]) token.type = dict[i]
+                }
+                token.value = rst[0]
+                yield token
+            }
+            yield {
+                type: /*End Of File*/'EOF'
+            }
+        }
+
+        const /*MultiplicativeExpression*/ME = (source) => {
+            if (source[0].type === 'number') {
+                source[0] = {
+                    type: 'ME',
+                    children: [source[0]]
+                }
+                return ME(source)
+            }
+
+            if (source[0].type === 'ME') {
+                if (source[1] && ['*', '/'].includes(source[1].type)) {
+                    const node = {
+                        type: 'ME',
+                        operate: source[1].type,
+                        children: []
+                    }
+                    node.children.push(source.shift())
+                    node.children.push(source.shift())
+                    node.children.push(source.shift())
+                    source.unshift(node)
+                    return ME(source)
+                }
+
+                return source[0]
+            }
+        }
+
+        const /*AdditiveExpression*/AE = (source) => {
+            if (source[0].type === 'ME') {
+                source[0] = {
+                    type: 'AE',
+                    children: [source[0]]
+                }
+                return AE(source)
+            }
+
+            if (source[0].type === 'AE') {
+                if (source[1] && ['+', '-'].includes(source[1].type)) {
+                    const node = {
+                        type: 'AE',
+                        operate: source[1].type,
+                        children: []
+                    }
+                    node.children.push(source.shift())
+                    node.children.push(source.shift())
+                    ME(source)
+                    node.children.push(source.shift())
+                    source.unshift(node)
+                    return AE(source)
+                }
+
+                return source[0]
+            }
+
+            ME(source)
+            return AE(source)
+        }
+
+        const expression = (source)=>{
+            if (source[0].type === 'AE' && source[1] && source[1].type === 'EOF'){
+                const node = {
+                    type:'Expression',
+                    children: [source.shift(), source.shift()]
+                }
+                source.unshift(node)
+                return source
+            }
+            AE(source)
+            return expression(source)
+        }
+
+        const run = (str) => {
+            return expression([...tokenize(str)].filter(v => !['whitespace', 'lineTerminator'].includes(v.type)))
+        }
+
+        console.log(run('1 + 2 - 3 * 4 / 5 + 6 * 7'))
+
+    </script>
+</body>
+
+</html>
