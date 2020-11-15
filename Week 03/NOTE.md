@@ -83,7 +83,7 @@ for (const [k,v] of {a:1,b:2}){
 1. 终结符
    - 数字：n
    - 运算符（+、-、*、/）
-   - 括号
+   - ~~括号~~
 2. 非终结符
    - 表达式：E
    - 项：T
@@ -91,7 +91,7 @@ for (const [k,v] of {a:1,b:2}){
 3. 起始符号：S
 4. 产生式
 
-```
+```typescript
 S -> E
 
 E -> E + T
@@ -103,7 +103,7 @@ T -> T / F
 T -> F
 
 F -> n
-F -> (E)
+// F -> (E)
 ```
 
 <img src="https://s3.ax1x.com/2020/11/13/Dp1N0f.jpg" style="zoom:33%;" />
