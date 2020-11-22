@@ -1,0 +1,98 @@
+<!--
+ * @Author: mrlthf11
+ * @LastEditors: mrlthf11
+ * @Date: 2020-11-22 15:55:28
+ * @LastEditTime: 2020-11-22 16:23:44
+ * @Description: file content
+-->
+<script>
+    const kmp = (source, pattern, sourceStartIndex = 0) => {
+        const table = Array(pattern.length).fill(0)
+
+        {
+            let i = 1, j = 0
+            while (i < pattern.length) {
+                if (pattern[i] === pattern[j] || pattern[j] === '?') {
+                    ++i, ++j
+                    table[i] = j
+                } else {
+                    if (j > 0) {
+                        j = table[j]
+                    } else {
+                        ++i
+                    }
+                }
+            }
+        }
+        {
+            let i = sourceStartIndex, j = 0
+            while (i < source.length) {
+                if (pattern[j] === source[i] || pattern[j] === '?') {
+                    ++i, ++j
+                } else {
+                    if (j > 0) {
+                        j = table[j]
+                    } else {
+                        ++i
+                    }
+                }
+                if (j === pattern.length)
+                    return i - j
+            }
+            return -1
+        }
+    }
+
+
+    function find(source, pattern) {
+        let startCount = 0
+        for (let i = 0, len = pattern.length; i < len; i++) {
+            if (pattern[i] === '*')
+                startCount++
+        }
+        // 无 * 号，全字匹配
+        if (startCount === 0) {
+            for (let i = 0, len = pattern.length; i < len; i++) {
+                if (source[i] !== pattern[i] && pattern[i] !== '?')
+                    return false
+            }
+            return true
+        }
+
+        let i = 0, lastIndex = 0
+        // 第一个 * 号之前，串头匹配
+        for (i = 0; pattern[i] !== '*'; i++) {
+            if (pattern[i] !== source[i] && pattern[i] !== '?') {
+                return false
+            }
+        }
+        lastIndex = i
+        for (p = 0; p < startCount - 1; p++) {
+            i++ // pattern[i] 为 * 号，+1 跳过
+            let subPattern = ""
+            while (pattern[i] !== '*') {
+                subPattern += pattern[i]
+                i++
+            }
+
+            lastIndex = kmp(source, subPattern, lastIndex)
+            if (lastIndex === -1) return false
+        }
+
+        // 串尾匹配，最后一个星号之后
+        for (let j = 0; j <= source.length - lastIndex && pattern[pattern.length - j] !== '*'; j++) {
+            if (pattern[pattern.length - j] !== source[source.length - j]
+                && source[source.length - j] !== '?') {
+                return false
+            }
+            return true
+        }
+    }
+
+    let i = 1000000
+    console.time('1')
+    while (i--) {
+        find("abdcdefghijklmnopq", "ab?c*hi*op*q")
+    }
+    console.timeEnd('1')
+</script>
