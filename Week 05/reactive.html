@@ -1,0 +1,41 @@
+<!--
+ * @Author: mrlthf11
+ * @LastEditors: mrlthf11
+ * @Date: 2020-11-23 21:47:56
+ * @LastEditTime: 2020-11-23 23:00:51
+ * @Description: file content
+-->
+<script>
+
+
+    const cbs = new Map()
+    const reactivates = []
+
+    const effect = cb => {
+        reactive.length = 0
+        cb()
+        for (const [obj, prop] of reactivates) {
+            if (!cbs.has(prop)) {
+                cbs.set(obj, new Map())
+            }
+            if (!cbs.get(obj).has(prop)) {
+                cbs.get(obj).set(prop, [])
+            }
+            cbs.get(obj).get(prop).push(cb)
+        }
+    }
+
+    const reactive = (object) => new Proxy(object, {
+        set(obj, prop, val) {
+            obj[prop] = val
+            for (const cb of cbs.get(obj).get(prop)) {
+                cb()
+            }
+            return obj[prop]
+        },
+        get(obj, prop) {
+            reactivates.push([obj, prop])
+            return obj[prop]
+        }
+    })
+</script>
