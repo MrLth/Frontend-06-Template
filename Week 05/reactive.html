@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2020-11-23 21:47:56
- * @LastEditTime: 2020-11-30 17:28:01
+ * @LastEditTime: 2020-12-01 08:34:36
  * @Description: file content
 -->
 <input type="range" max="255" min="0" id="r">
@@ -39,16 +39,16 @@
 
             const subscribeObj = cbs.get(obj)?.get(prop)
             if (subscribeObj && subscribeObj.value !== val) {
-                const publish = () => {
+                const notify = () => {
                     subscribeObj.value = val
                     for (const cb of subscribeObj.subscribers) {
                         cb()
                     }
                 }
                 if (isCollecting) {
-                    Promise.resolve().then(() => publish())
+                    Promise.resolve().then(() => notify())
                 } else {
-                    publish()
+                    notify()
                 }
             }
 
