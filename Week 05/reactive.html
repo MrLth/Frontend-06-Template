@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2020-11-23 21:47:56
- * @LastEditTime: 2020-11-29 19:26:43
+ * @LastEditTime: 2020-12-01 08:34:36
  * @Description: file content
 -->
 <input type="range" max="255" min="0" id="r">
@@ -12,33 +12,61 @@
 <script>
     const cbs = new Map()
     const reactivates = []
+    const weakTable = new WeakMap()
+    let isCollecting = false
 
     const effect = cb => {
         reactivates.length = 0
+        isCollecting = true
         cb()
-        for (const [obj, prop] of reactivates) {
+        isCollecting = false
+
+        console.log('reactivates', JSON.stringify(reactivates))
+        for (const [obj, prop, value] of reactivates) {
             if (!cbs.has(obj)) {
                 cbs.set(obj, new Map())
             }
             if (!cbs.get(obj).has(prop)) {
-                cbs.get(obj).set(prop, [])
+                cbs.get(obj).set(prop, { value, subscribers: [] })
             }
-            cbs.get(obj).get(prop).push(cb)
+            cbs.get(obj).get(prop).subscribers.push(cb)
         }
     }
 
     const reactive = (object) => new Proxy(object, {
         set(obj, prop, val) {
             obj[prop] = val
-            if (cbs.get(obj).get(prop)) {
-                for (const cb of cbs.get(obj).get(prop)) {
-                    cb()
+
+            const subscribeObj = cbs.get(obj)?.get(prop)
+            if (subscribeObj && subscribeObj.value !== val) {
+                const notify = () => {
+                    subscribeObj.value = val
+                    for (const cb of subscribeObj.subscribers) {
+                        cb()
+                    }
+                }
+                if (isCollecting) {
+                    Promise.resolve().then(() => notify())
+                } else {
+                    notify()
                 }
             }
-            return obj[prop]
+
+            return val
         },
         get(obj, prop) {
-            reactivates.push([obj, prop])
+            if (isCollecting && !reactivates.some(([_obj, _prop]) => _obj === obj && _prop === prop)) {
+                reactivates.push([obj, prop, obj[prop]])
+            }
+
+            if (typeof obj[prop] === 'object') {
+                const subObj = obj[prop]
+                if (!weakTable.has(subObj)) {
+                    weakTable.set(subObj, reactive(subObj))
+                }
+                return weakTable.get(subObj)
+            }
+
             return obj[prop]
         }
     })
@@ -46,24 +74,40 @@
     const p = reactive({
         r: 0,
         g: 0,
-        b: 0
+        b: 0,
+        a: {
+            b: {
+                c: 1
+            }
+        }
     })
 
     document.getElementById('r').addEventListener('input', (e) => p.r = e.target.value)
     document.getElementById('g').addEventListener('input', (e) => p.g = e.target.value)
     document.getElementById('b').addEventListener('input', (e) => p.b = e.target.value)
 
+
+    effect(() => {
+        console.log('p.a.b.c', p.a.b.c)
+    })
+
     effect(() => {
         document.getElementById('r').value = p.r
+        console.log('p.r')
     })
     effect(() => {
         document.getElementById('g').value = p.g
+        console.log('p.b')
+
     })
     effect(() => {
         document.getElementById('b').value = p.b
+        console.log('p.g')
     })
     effect(() => {
         document.getElementById('color').style.backgroundColor = `rgb(${p.r},${p.g},${p.b})`
+        p.a.b.c = `rgb(${p.r},${p.g},${p.b})`
+        // p.a.b.c = `rgb(${p.r},${p.g},${p.b})` // Resolved(Error: stack overflow, 原因是被 get 和 set 同时收集到了)
     })
 
 </script>
