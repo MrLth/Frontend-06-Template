@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://gw.alipayobjects.com/os/lib/antv/g6/3.7.1/dist/g6.min.js"></script>
+    <script src="./realms-shim.umd.min.js"></script>
+    <title>Realm</title>
+</head>
+
+<body>
+    <div id="container"></div>
+    <script>
+        const keys = window.Realm
+            ? Object.keys(Object.getOwnPropertyDescriptors(Realm.makeRootRealm().global))
+            : ["Infinity", "NaN", "undefined", "isFinite", "isNaN", "parseFloat", "parseInt", "decodeURI", "decodeURIComponent", "encodeURI", "encodeURIComponent", "Array", "ArrayBuffer", "Boolean", "DataView", "EvalError", "Float32Array", "Float64Array", "Int8Array", "Int16Array", "Int32Array", "Map", "Number", "Object", "RangeError", "ReferenceError", "Set", "String", "Symbol", "SyntaxError", "TypeError", "Uint8Array", "Uint8ClampedArray", "Uint16Array", "Uint32Array", "URIError", "WeakMap", "WeakSet", "JSON", "Math", "Reflect", "escape", "unescape", "Date", "Error", "Promise", "Proxy", "RegExp", "Intl", "Realm", "eval", "Function"]
+
+        renderGraphs(keys.reduce((a, c, i) => {
+            a.nodes.push({
+                id: String(i + 1),
+                label: c,
+                size: c.length * 10,
+            })
+            a.edges.push({
+                source: '0',
+                target: String(i + 1),
+            })
+            return a
+        }, {
+            nodes: [
+                { id: '0', label: 'Realm' }
+            ],
+            edges: []
+        }))
+
+        function renderGraphs(data) {
+            const container = document.getElementById('container');
+            const height = window.innerHeight || document.body.clientHeight;
+            const width = window.innerWidth || document.body.clientWidth;
+            const graph = new G6.Graph({
+                container: 'container',
+                width,
+                height,
+                layout: {
+                    type: 'force',
+                    preventOverlap: true,
+                    nodeSpacing: 10
+                },
+                modes: {
+                    default: ['drag-node'],
+                },
+                defaultNode: {
+                    size: 100,
+                },
+            });
+            graph.data(data);
+            graph.render();
+
+            function refreshDragedNodePosition(e) {
+                const model = e.item.get('model');
+                model.fx = e.x;
+                model.fy = e.y;
+            }
+            graph.on('node:dragstart', (e) => {
+                graph.layout();
+                refreshDragedNodePosition(e);
+            });
+            graph.on('node:drag', (e) => {
+                refreshDragedNodePosition(e);
+            });
+            if (typeof window !== 'undefined')
+                window.onresize = () => {
+                    if (!graph || graph.get('destroyed')) return;
+                    if (!container || !container.scrollWidth || !container.scrollHeight) return;
+                    graph.changeSize(container.scrollWidth, container.scrollHeight);
+                };
+        }
+    </script>
+</body>
+
+</html>
