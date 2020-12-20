@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2020-12-18 13:48:44
- * @LastEditTime: 2020-12-18 17:13:16
+ * @LastEditTime: 2020-12-19 18:04:39
  * @Description: file content
  */
 
@@ -18,10 +18,11 @@ http.createServer((request, response) => {
             body.push(chunk.toString())
         })
         .on('end', () => {
+            console.log(request.headers)
             // body = Buffer.concat(body).toString()
             console.log('body', body)
             response.writeHead(200, { 'Content-type': 'text/html' })
-            response.end('Hello world' + body)
+            response.end('Hello world\n' + body)
         })
 }).listen(8000)
 console.log('server started')

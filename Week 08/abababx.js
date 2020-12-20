@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2020-12-18 09:25:07
- * @LastEditTime: 2020-12-18 11:02:00
+ * @LastEditTime: 2020-12-19 17:14:39
  * @Description: file content
  */
 
@@ -98,6 +98,6 @@ function find(source){
     return t === end
 }
 
-// console.log(nextTable('abababx'))
+console.log(nextTable('abababx'))
 
 console.log(find('ababxbxababax1232'))
