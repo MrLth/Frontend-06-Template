@@ -4,10 +4,10 @@
 // 匹配 'abcabx' 的简单示例
 const a1 = c => c==='a' ? b1 : a1
 const b1 = c => c==='b' ? c1 : a1
-const c  = c => c==='c' ? a2 : a1
+const c1  = c => c==='c' ? a2 : a1
 const a2 = c => c==='a' ? b2 : a1
-const b2 = c => c==='b' ? x  : b1
-const x  = c => c==='x' ? end: c
+const b2 = c => c==='b' ? x  : b1(c)
+const x  = c => c==='x' ? end: c1(c)
 const end = ()=> end
 
 const match = (string)=> {
@@ -17,6 +17,8 @@ const match = (string)=> {
   }
   return next === end
 }
+
+match('abcabx')
 ```
 
 # 2. HTTP
