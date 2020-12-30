@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!--
+ * @Author: mrlthf11
+ * @LastEditors: mrlthf11
+ * @Date: 2020-12-25 14:50:53
+ * @LastEditTime: 2020-12-30 16:04:27
+ * @Description: file content
+-->
+<html lang="en">
+
+<head>
+    <title>TEST</title>
+    <style>
+        .container {
+            width: 100px;
+        }
+
+        a#b {
+            background-color: #f00;
+        }
+
+        .container a#a {
+            background-color: #faa;
+        }
+
+        a#c.c {
+            background-color: green;
+        }
+
+        .container a#d.d {
+            overflow: hidden;
+        }
+
+        div.container a#d.d.d1 {
+            background-color: #faa;
+        }
+
+        .container a#d.d.d1.d2 {
+            position: absolute;
+        }
+
+        div .wrapper {
+            font-weight: 700;
+            background-color: #fff;
+            ;
+        }
+
+        div.wrapper {
+            font-size: 100px;
+        }
+
+        div div {
+            color: red;
+            font-weight: normal;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="#a">a</a>
+        <a id="#b" href="#b">b</a>
+        <a id="#c" class="c" href="#c"></a>
+        <a id="#d" class="d d1" href="#d"></a>
+        <div class="wrapper">wrapper</div>
+    </div>
+    <div style="display:flex;width: 800px;flex-wrap: wrap;">
+        <div style="order: 1;flex:1;width: 500px;">2</div>
+        <div style="width: 200px;height: 100px;">1</div>
+        <div>
+            <div style="width: 100px;">3</div>
+            <div style="width: 120px;">4</div>
+        </div>
+    </div>
+</body>
+
+</html>
