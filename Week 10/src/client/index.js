@@ -2,12 +2,13 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2020-12-18 14:15:37
- * @LastEditTime: 2020-12-30 08:53:49
+ * @LastEditTime: 2020-12-31 16:59:18
  * @Description: file content
  */
 const net = require('net')
 const { parseHTML } = require('./parser')
-
+const { render } = require('./render')
+const images = require('images')
 
 class ChunkedBodyParser {
     isFinished = false
@@ -168,7 +169,6 @@ class ResponseParser {
     }
 
     receive(string) {
-        // console.log('string', string)
         for (const char of string) {
             this.receiveChar(char)
         }
@@ -268,7 +268,10 @@ void async function () {
     })
 
     response = await request.send()
-    // console.log('response\n', response)
-    parseHTML(response.body)
+    const dom = parseHTML(response.body)
+    const viewport = images(800, 600).fill(255, 255, 255, 1)
+    render(viewport, dom)
+    viewport.save('viewport.jpg')
+    debugger
 }()
 // void IIFE 和 (null, function)() IIFE 还是有区别的，后者可以使 this 失效，有一层语义上的效果

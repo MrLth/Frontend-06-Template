@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!--
+ * @Author: mrlthf11
+ * @LastEditors: mrlthf11
+ * @Date: 2020-12-25 14:50:53
+ * @LastEditTime: 2020-12-31 16:08:39
+ * @Description: file content
+-->
+<html lang="en">
+
+<head>
+    <title>TEST</title>
+    <style>
+        #flex {
+            display: flex;
+            width: 800px;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            background-color: #faa;
+        }
+
+        #flex .first {
+            order: 1;
+            width: 500px;
+            height: 250px;
+            background-color: #afa;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="flex">
+        <div class="first"></div>
+        <div style="width: 200px;height: 100px;background-color: #aaf;"></div>
+        <div style="height: 50px; background: #f00;">
+            <div style="width: 100px;"></div>
+            <div style="width: 120px;"></div>
+        </div>
+    </div>
+    <div></div>
+</body>
+
+</html>

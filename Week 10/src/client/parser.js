@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2020-12-25 08:43:27
- * @LastEditTime: 2020-12-30 09:34:57
+ * @LastEditTime: 2020-12-31 16:07:18
  * @Description: file content
  */
 
@@ -13,7 +13,7 @@ const EOF = Symbol('EOF')
 let tempAttrName = ''
 let currentToken = null
 let tempTextElement = null
-const stack = [{ tagName: 'document', children: [], type: 'element' }]
+const stack = [{ tagName: 'document', attributes: [], children: [], type: 'element' }]
 const cssRules = []
 
 function addCSSRules(content) {
@@ -35,7 +35,6 @@ function addCSSRules(content) {
                         const specificity = [0, 0, 0, 0]
                         const value = [...native.matchAll(/((?:\.|#)?[^#\.]+)/g)]
                             .reduce((a, [/*matched selector*/s]) => {
-                                // console.log('matched selector:', s)
                                 /*  */ if (s[0] === '#') {
                                     a.id = s.substr(1)
                                     specificity[1]++
@@ -71,7 +70,7 @@ function match(element, selectorCell) {
     if (selectorCell.id) {
         // TODO: id 属性应该直接保存在元素上
         const id = element.attributes.find(v => v.name === 'id')?.value
-        if ('#' + selectorCell.id !== id)
+        if (selectorCell.id !== id)
             return false
     }
 
@@ -190,7 +189,7 @@ function emit(token) {
                 v.split(';').reduce((a, c) => {
                     const [key, value] = c.split(':')
                     if (key && value)
-                        a[key] = { value, specificity: [1, 0, 0, 0] }
+                        a[key.trim()] = { value: value.trim(), specificity: [1, 0, 0, 0] }
                     return a
                 }, element.computedStyle)
                 continue
@@ -426,8 +425,7 @@ function parseHTML(body) {
         next = next(c)
     }
     next(EOF)
-    console.log(stack)
-
+    return stack[0]
 }
 
 
