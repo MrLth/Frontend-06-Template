@@ -57,7 +57,7 @@
            break
    }
    
-   // arr.find 或者 arr.every 也可，但语义都变差了
+   // arr.find 或者 arr.every 也可，但语义都变差了， 老老实实写 for let 吧
    arr.some((item,i)=>{
        if (item > 50000)
            return true
