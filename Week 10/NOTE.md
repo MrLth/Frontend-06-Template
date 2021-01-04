@@ -45,4 +45,23 @@
 
 
 
+# 技巧
 
+1. 使用 array.some 代替 array.forEach 实现 break
+
+   ```typescript
+   const arr = Array.from({length:100000}).map((_,i)=>i+1)
+   // 没有 i
+   for (const item of arr){
+       if (item > 50000)
+           break
+   }
+   
+   // arr.find 或者 arr.every 也可，但语义都变差了
+   arr.some((item,i)=>{
+       if (item > 50000)
+           return true
+   })
+   ```
+
+   
