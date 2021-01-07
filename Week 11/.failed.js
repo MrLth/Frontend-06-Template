@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-01-06 09:22:54
- * @LastEditTime: 2021-01-06 13:26:39
+ * @LastEditTime: 2021-01-07 11:23:02
  * @Description: file content
 */
 
@@ -11,7 +11,6 @@
 
 
 /**
- * @description: 
  * @param {string} selector
  * @param {HTMLElement} element
  * @return {boolean}
@@ -22,7 +21,6 @@ function match(selector, element) {
     const compounds = selector.split(' ')
 
     /**
-     * @description: 
      * @param {string} selector
      * @return {*}
      */
