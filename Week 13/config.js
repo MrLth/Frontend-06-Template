@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-01-19 17:31:00
- * @LastEditTime: 2021-01-19 18:00:19
+ * @LastEditTime: 2021-01-19 18:04:06
  * @Description: file content
  */
 /**
@@ -16,9 +16,9 @@ for (const name of names) {
     }
 }
 /**/
-let names = new Set(Object.getOwnPropertyNames(window))
 
-let filter = el => {
+
+function filter(el) {
     if (el.parentNode.tagName === 'TD') return false
     const text = el?.innerText
     if (!text) return false
@@ -32,10 +32,8 @@ let filter = el => {
 }
 
 
-let rst = Object.create(null)
 
-
-const generateRst = (set) => {
+function generateRst(set) {
     const rst = []
     for (const name of names) {
         if (set.has(name)) {
@@ -45,20 +43,24 @@ const generateRst = (set) => {
     return rst
 }
 
-const baseFn = () => generateRst(new Set([...document.querySelectorAll('code,a,dfn')].map(filter)))
+function baseFn() {
+    return generateRst(new Set([...document.querySelectorAll('code,a,dfn')].map(filter)))
+}
 
-const svgFn = () => generateRst(
-    new Set(
-        [...document.querySelectorAll('a[href$="#DOMInterfaces"]')]
-            .reduce((a, c) => a.concat(Array.from(c.nextSibling?.children)), [])
-            .map(el => {
-                const rst = /(?<=\s)\S*$/.exec(el.innerText)
-                return rst ? rst[0] : false
-            })
+function svgFn() {
+    return generateRst(
+        new Set(
+            [...document.querySelectorAll('a[href$="#DOMInterfaces"]')]
+                .reduce((a, c) => a.concat(Array.from(c.nextSibling?.children)), [])
+                .map(el => {
+                    const rst = /(?<=\s)\S*$/.exec(el.innerText)
+                    return rst ? rst[0] : false
+                })
+        )
     )
-)
+}
 
-
+let names = module || new Set(Object.getOwnPropertyNames(window))
 
 const config = [
     ['ecma', 'https://tc39.es/ecma262/', baseFn],
