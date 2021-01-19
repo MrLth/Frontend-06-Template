@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-01-19 13:25:20
- * @LastEditTime: 2021-01-19 15:13:14
+ * @LastEditTime: 2021-01-19 16:15:37
  * @Description: file content
  */
 
@@ -22,13 +22,13 @@ const credentials = { key: privateKey, cert: certificate };
 
 
 
-app.use('/api', createProxyMiddleware({
-    target: 'https://baidu.com',
+app.use('/d', createProxyMiddleware({
+    target: 'https://www.w3.org/TR/SVG11/expanded-toc.html',
     changeOrigin: true,
-    pathRewrite: { '/api': '/' }
+    pathRewrite: { '/d': '' }
 }));
 
 app.use('/', express.static(__dirname))
 
-http.createServer(app).listen(3000)
+http.createServer(app).listen(3002)
 https.createServer(credentials, app).listen(3001)
