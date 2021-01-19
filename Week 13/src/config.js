@@ -2,24 +2,10 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-01-19 17:31:00
- * @LastEditTime: 2021-01-19 18:04:06
+ * @LastEditTime: 2021-01-20 00:21:09
  * @Description: file content
  */
-/**
- * ECMAScript
- *
-let ecmaSet = new Set([...document.querySelectorAll('code')].map(filter))
-
-for (const name of names) {
-    if (ecmaSet.has(name)) {
-        rst.ecma.push(name)
-    }
-}
-/**/
-
-
 function filter(el) {
-    if (el.parentNode.tagName === 'TD') return false
     const text = el?.innerText
     if (!text) return false
     const rst = /^[_$A-Za-z][_$A-Za-z0-9]*(?:\.([_$A-Za-z0-9]*))*$/.exec(text)
@@ -31,8 +17,6 @@ function filter(el) {
         : false
 }
 
-
-
 function generateRst(set) {
     const rst = []
     for (const name of names) {
@@ -40,17 +24,22 @@ function generateRst(set) {
             rst.push(name)
         }
     }
+
+    for (const name of rst) {
+        notSortedNames.delete(name)
+    }
+
     return rst
 }
 
-function baseFn() {
-    return generateRst(new Set([...document.querySelectorAll('code,a,dfn')].map(filter)))
+function baseFn(iframeDocument) {
+    return generateRst(new Set([...iframeDocument.querySelectorAll('code,a,dfn')].map(filter)))
 }
 
-function svgFn() {
+function svgFn(iframeDocument) {
     return generateRst(
         new Set(
-            [...document.querySelectorAll('a[href$="#DOMInterfaces"]')]
+            [...iframeDocument.querySelectorAll('a[href$="#DOMInterfaces"]')]
                 .reduce((a, c) => a.concat(Array.from(c.nextSibling?.children)), [])
                 .map(el => {
                     const rst = /(?<=\s)\S*$/.exec(el.innerText)
@@ -60,7 +49,13 @@ function svgFn() {
     )
 }
 
-let names = module || new Set(Object.getOwnPropertyNames(window))
+function webAudioFn(iframeDocument) {
+    return generateRst(new Set([...iframeDocument.querySelectorAll('ul li code a')].map(filter)))
+}
+
+let names = module ?? new Set(Object.getOwnPropertyNames(window))
+let notSortedNames = module ?? new Set(Object.getOwnPropertyNames(window))
+
 
 const config = [
     ['ecma', 'https://tc39.es/ecma262/', baseFn],
@@ -73,10 +68,9 @@ const config = [
     ['whatwg-storage', 'https://storage.spec.whatwg.org/', baseFn],
     ['whatwg-streams', 'https://streams.spec.whatwg.org/', baseFn],
     ['whatwg-xhr', 'https://xhr.spec.whatwg.org/', baseFn],
-    ['webGL', 'https://www.khronos.org/registry/webgl/specs', baseFn],
-    ['w3c-webAudio', 'https://www.w3.org/TR/webaudio/#APIOverview', baseFn],
+    ['webGL', 'https://www.khronos.org/registry/webgl/specs/latest/2.0/', baseFn],
+    ['w3c-webAudio', 'https://www.w3.org/TR/webaudio/#APIOverview', webAudioFn],
     ['w3c-svg', 'https://www.w3.org/TR/SVG11/expanded-toc.html', svgFn],
 ]
 
-module.exports = config
-
+if (module) module.exports = config

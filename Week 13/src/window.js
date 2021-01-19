@@ -2,13 +2,12 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-01-19 08:46:10
- * @LastEditTime: 2021-01-19 17:52:11
+ * @LastEditTime: 2021-01-20 00:11:47
  * @Description: file content
  */
 let names = new Set(Object.getOwnPropertyNames(window))
 
 let filter = el => {
-    if (el.parentNode.tagName === 'TD') return false
     const text = el?.innerText
     if (!text) return false
     const rst = /^[_$A-Za-z][_$A-Za-z0-9]*(?:\.([_$A-Za-z0-9]*))*$/.exec(text)
