@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-01-19 08:46:10
- * @LastEditTime: 2021-01-19 13:51:02
+ * @LastEditTime: 2021-01-19 17:52:11
  * @Description: file content
  */
 let names = new Set(Object.getOwnPropertyNames(window))
