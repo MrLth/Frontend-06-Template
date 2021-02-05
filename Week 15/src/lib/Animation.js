@@ -4,7 +4,7 @@ import { linear } from "./TimingFunction"
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-02-04 10:26:55
- * @LastEditTime: 2021-02-04 15:14:37
+ * @LastEditTime: 2021-02-05 16:58:07
  * @Description: file content
  */
 class Animation {

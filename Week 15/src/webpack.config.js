@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-01-30 16:16:28
- * @LastEditTime: 2021-02-04 13:54:11
+ * @LastEditTime: 2021-02-05 16:13:01
  * @Description: file content
  */
 
@@ -15,7 +15,8 @@ module.exports = {
   entry: {
     // main: path.resolve(__dirname, 'main.js'),
     mouse: path.resolve(__dirname, 'mouse.js'),
-    pause: path.resolve(__dirname, './pause/pause.js')
+    pause: path.resolve(__dirname, './pause/pause.js'),
+    gesture: path.resolve(__dirname, './gesture/gesture.js')
   },
   output: {
     path: path.resolve(__dirname, '../dist'),
@@ -51,6 +52,12 @@ module.exports = {
       chunks: ['pause'],
       filename: 'pause.html',
       template: path.resolve(__dirname, './pause/pause.html')
+    }),
+    new HtmlWebpackPlugin({
+      inject: true,
+      chunks: ['gesture'],
+      filename: 'gesture.html',
+      template: path.resolve(__dirname, 'index.html')
     }),
   ]
 }
