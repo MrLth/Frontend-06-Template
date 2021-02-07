@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-01-30 16:16:28
- * @LastEditTime: 2021-02-05 16:13:01
+ * @LastEditTime: 2021-02-07 10:44:26
  * @Description: file content
  */
 
@@ -16,7 +16,7 @@ module.exports = {
     // main: path.resolve(__dirname, 'main.js'),
     mouse: path.resolve(__dirname, 'mouse.js'),
     pause: path.resolve(__dirname, './pause/pause.js'),
-    gesture: path.resolve(__dirname, './gesture/gesture.js')
+    gesture: path.resolve(__dirname, 'gesture.js')
   },
   output: {
     path: path.resolve(__dirname, '../dist'),
