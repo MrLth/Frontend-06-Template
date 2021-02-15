@@ -2,9 +2,12 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-01-30 16:36:48
- * @LastEditTime: 2021-01-30 18:12:12
+ * @LastEditTime: 2021-02-15 16:35:25
  * @Description: file content
  */
+
+export const STATE = Symbol('state')
+export const PROPS = Symbol('props')
 
 
 export const createElement = (target, props, ...children) => {
@@ -23,18 +26,26 @@ export const createElement = (target, props, ...children) => {
   return element
 }
 
+
 export class Component {
   constructor() {
-    this.props = {}
+    this[PROPS] = {}
+    this[STATE] = {}
   }
   setAttribute(k, v) {
-    this.props[k] = v
+    this[PROPS][k] = v
   }
   appendChild(child) {
     child.mount(this.root)
   }
   mount(dom) {
-    dom.appendChild(this.render(this.props))
+    if (!this.root) this.render(this[PROPS])
+    dom.appendChild(this.root)
+  }
+  triggerEvent(type, args) {
+    // string.prototype.replace(/^(\w)/, s => s.toUpperCase())
+    const onType = `on${type.replace(/^(\w)/, RegExp.$1.toUpperCase())}`
+    typeof this[PROPS][onType] === 'function' && this[PROPS][onType](new CustomEvent(type, { detail: args }))
   }
 }
 

@@ -2,9 +2,11 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-02-05 14:22:04
- * @LastEditTime: 2021-02-14 16:57:32
+ * @LastEditTime: 2021-02-15 10:55:22
  * @Description: file content
  */
+
+import { ease } from "./TimingFunction"
 
 const contents = new Map()
 const threshold = (window.devicePixelRatio ?? 1) * 5
@@ -18,19 +20,20 @@ export class Listener {
   constructor(element, _Recognizer = Recognizer, _dispatch = dispatch.bind(null, element)) {
     //#region mouse event，注意区分左右键（e.button & e.buttons）
     element.addEventListener('mousedown', e => {
-      console.log('mousedown')
       // fix tap trigger twice
       if (isTouched) {
         isTouched = false
         return
       }
+      // fix mouseup not triggered, because triggered drag
+      e.preventDefault()
+
       //#region mouse down
       const content = new _Recognizer(_dispatch)
       contents.set(`mouse ${1 << e.button}`, content)
       content.start(e)
       //#endregion
       const move = e => {
-        console.log('mousemove')
         let x = e.buttons // mousemove event 没有 button
         while (x) {
           //#region fix order of buttons & button is not same
@@ -43,8 +46,6 @@ export class Listener {
         }
       }
       const up = e => {
-        console.log('mouseup')
-        console.clear()
         const content = contents.get(`mouse ${1 << e.button}`)
         content?.end(e)
         contents.delete(`mouse ${1 << e.button}`)
@@ -129,8 +130,6 @@ class Recognizer {
     }]
 
     this.dispatch('start', {
-      startX: this.startX,
-      startY: this.startY,
       clientX: e.clientX,
       clientY: e.clientY,
     })
@@ -213,6 +212,7 @@ class Recognizer {
         clientY: e.clientY,
         isVertical: this.isVertical,
         isFlick: this.isFlick,
+        velocity
       })
     }
 
@@ -228,6 +228,7 @@ class Recognizer {
       clientY: e.clientY,
       isVertical: this.isVertical,
       isFlick: this.isFlick,
+      velocity
     })
   }
   /**

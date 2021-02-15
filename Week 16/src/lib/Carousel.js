@@ -2,11 +2,14 @@ import { enableGesture } from './gesture'
 import TimeLine from './TimeLine'
 import Animation from './Animation'
 import { ease } from './TimingFunction'
+import { STATE } from './happyReact'
+export { STATE } from './happyReact'
+
 /*
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-02-04 10:17:15
- * @LastEditTime: 2021-02-14 16:52:21
+ * @LastEditTime: 2021-02-15 16:42:01
  * @Description: file content
  */
 import { Component } from './happyReact'
@@ -21,72 +24,123 @@ class Carousel extends Component {
       this.root.appendChild(child)
     }
 
+
     let position = 0
+
+    Object.defineProperty(this[STATE], 'position', {
+      get() {
+        return position
+      },
+      set: v => {
+        if (position !== v) {
+          position = v
+          this.triggerEvent('change', { position: (position % len + len) % len })
+        }
+      }
+    })
+
+
     const children = this.root.children
     const len = children.length
     let width = 500
 
     enableGesture(this.root)
 
+    let timeline = new TimeLine()
+    timeline.start()
+
+    let t = 0
+    let animationX = 0
+
+    this.root.addEventListener('tap', e => {
+      const pos = (position % len + len) % len
+      this.triggerEvent('click', {
+        position: pos,
+        src: props.src[pos]
+      })
+    })
+
     this.root.addEventListener('start', e => {
-      console.log('start')
+      timeline.pause()
+
+      const animationSpentTime = Date.now() - t
+
+      // 限定 animationX 只在动画执行过程中有效，其余时间为 0 (即无效)
+      animationX = animationSpentTime < duration
+        ? ease(animationSpentTime / duration) * width - width
+        : 0
+
+      clearInterval(handler)
     })
 
     this.root.addEventListener('pan', e => {
-      const x = e.clientX - e.startX
-      const current = position - (x / width | 0) // position - ((x - x % 888) / 888)
+      console.log('pan')
+      const x = e.clientX - e.startX - animationX
+      const current = this[STATE].position - (x / width | 0)
       for (const offset of [-1, 0, 1]) {
         let pos = current + offset;
-        pos = pos < 0 ? len - 1 + pos % len : pos % len // (pos + children.length) % children.length
+        pos = (pos % len + len) % len
         children[pos].style.transition = 'none'
         children[pos].style.transform = `translateX(${-pos * width + offset * width + x % width}px)`
       }
-      console.log(1)
     })
-
-    this.root.addEventListener('flick', e => console.log('flick'))
 
     this.root.addEventListener('end', e => {
-      console.log('end')
-      const x = e.clientX - e.startX
-      position = position - Math.round(x / width)
-      for (const offset of [0, -Math.sign(Math.round(x / width) - x + width / 2 * Math.sign(x))]) {
-        let pos = position + offset;
-        pos = pos < 0 ? len - 1 + pos % len : pos % len
-        children[pos].style.transform = `translateX(${-pos * width + offset * width}px)`
+      timeline.reset()
+      timeline.start()
+      handler = setInterval(nextPicture, 3000)
+
+      const x = e.clientX - e.startX - animationX
+      const current = this[STATE].position - (x / width | 0)
+
+      const direction = e.isFlick
+        ? x < 0 ? Math.floor((x % width) / width) : Math.ceil((x % width) / width)
+        : Math.round((x % width) / width)
+
+      // 已经执行一部分的动画，不需要完整的动画时长
+      const progress = Math.abs(x % width) / width
+      let _duration = direction ? (1 - progress) * duration : progress * duration
+
+      const sign = Math.sign(Math.round(x / width) - x + width / 2 * Math.sign(x))
+      for (const offset of [0, sign, -sign]) {
+        let pos = current + offset;
+        pos = (pos % len + len) % len
+
+        timeline.add(new Animation(children[pos].style, 'transform',
+          (-pos + offset) * width + x % width,
+          (-pos + offset + direction) * width,
+          _duration, 0, ease, templateFunction))
       }
+
+      this[STATE].position = current - direction
+      this[STATE].position = (this[STATE].position % len + len) % len
     })
 
-    // this.root.addEventListener('mousedown', (e) => {
-    //   const startX = e.clientX
-    //   width = 500
+    const templateFunction = v => `translateX(${v}px)`
+    const duration = 1000
+    const nextPicture = () => {
+      const children = this.root.children
+      const current = children[this[STATE].position]
+      const nextIndex = (this[STATE].position + 1) % children.length
+      const next = children[nextIndex]
 
-    //   const move = (e) => {
-    //     const x = e.clientX - startX
-    //     const current = position - (x / width | 0) // position - ((x - x % 888) / 888)
-    //     for (const offset of [-1, 0, 1]) {
-    //       let pos = current + offset;
-    //       pos = pos < 0 ? len - 1 + pos % len : pos % len // (pos + children.length) % children.length
-    //       children[pos].style.transition = 'none'
-    //       children[pos].style.transform = `translateX(${-pos * width + offset * width + x % width}px)`
-    //     }
-    //   }
-    //   const up = (e) => {
-    //     const x = e.clientX - startX
-    //     position = position - Math.round(x / width)
-    //     for (const offset of [0, -Math.sign(Math.round(x / width) - x + width / 2 * Math.sign(x))]) {
-    //       let pos = position + offset;
-    //       pos = pos < 0 ? len - 1 + pos % len : pos % len
-    //       children[pos].style.transition = ''
-    //       children[pos].style.transform = `translateX(${-pos * width + offset * width}px)`
-    //     }
-    //     document.removeEventListener('mousemove', move)
-    //     document.removeEventListener('mouseup', up)
-    //   }
+      t = Date.now()
 
-    //   document.addEventListener('mousemove', move)
-    //   document.addEventListener('mouseup', up)
-    // })
+      timeline.add(new Animation(current.style, 'transform',
+        -width * this[STATE].position,
+        -width * (this[STATE].position + 1),
+        duration, 0, ease, templateFunction))
+
+      timeline.add(new Animation(next.style, 'transform',
+        -width * (nextIndex - 1),
+        -width * nextIndex,
+        duration, 0, ease, templateFunction))
+
+      this[STATE].position = nextIndex
+    }
+
+    let handler = setInterval(nextPicture, 3000)
+
     return this.root
   }
 }
