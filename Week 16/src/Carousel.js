@@ -1,18 +1,18 @@
-import { enableGesture } from './gesture'
-import TimeLine from './TimeLine'
-import Animation from './Animation'
-import { ease } from './TimingFunction'
-import { STATE } from './happyReact'
-export { STATE } from './happyReact'
+import { enableGesture } from './lib/gesture'
+import TimeLine from './lib/TimeLine'
+import Animation from './lib/Animation'
+import { ease } from './lib/TimingFunction'
+import { STATE } from './lib/happyReact'
+export { STATE } from './lib/happyReact'
 
 /*
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-02-04 10:17:15
- * @LastEditTime: 2021-02-15 16:42:01
+ * @LastEditTime: 2021-02-16 10:44:31
  * @Description: file content
  */
-import { Component } from './happyReact'
+import { Component } from './lib/happyReact'
 
 class Carousel extends Component {
   render(props) {

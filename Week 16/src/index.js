@@ -2,11 +2,11 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-01-30 16:18:13
- * @LastEditTime: 2021-02-15 16:39:58
+ * @LastEditTime: 2021-02-16 09:37:50
  * @Description: file content
  */
 import { createElement } from './lib/happyReact'
-import Carousel from './lib/Carousel'
+import Carousel from './Carousel'
 
 
 const list = [
