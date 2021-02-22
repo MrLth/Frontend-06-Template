@@ -1,0 +1,4 @@
+{
+    "plugins": [["./plugin", {"operator": "**"}]]
+}
+// babel native.js -o dist.js

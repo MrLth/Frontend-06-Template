@@ -1,0 +1,11 @@
+{
+  "name": "plugin-02",
+  "version": "1.0.0",
+  "description": "",
+  "main": "entry.js",
+  "scripts": {
+    "parse": "babel entry.js -o output.js"
+  },
+  "author": "",
+  "license": "ISC"
+}

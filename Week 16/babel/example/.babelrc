@@ -1,0 +1,20 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "useBuiltIns": "usage" // 自动导入 polyfill
+        // targets: "> 0.25%"
+      }
+    ]
+  ],
+  "plugins": [
+    [
+      "@babel/plugin-transform-runtime",
+      {
+        "corejs": 2, //  原型上的方法会覆盖原生, 但全局变量会使用别名
+        // "corejs": 3 // 原型上的方法和全局变量都会使用别名
+      }
+    ]
+  ]
+}
