@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-02-17 08:58:27
- * @LastEditTime: 2021-02-27 14:52:00
+ * @LastEditTime: 2021-02-27 16:53:11
  * @Description: file content
  */
 var Generator = require('yeoman-generator');
@@ -41,7 +41,7 @@ module.exports = class extends Generator {
       name: answers.name,
       scripts: {
         build: 'webpack',
-        test: 'mocha --require @babel/register',
+        test: 'mochapack --webpack-config webpack.config.js --require test/setup.js test/**/*.spec.js',
         coverage: 'nyc mocha'
       }
     }
@@ -54,16 +54,22 @@ module.exports = class extends Generator {
       '@babel/preset-env',
       '@babel/register',
       '@istanbuljs/nyc-config-babel',
+      '@vue/test-utils',
       'babel-plugin-istanbul',
       'mocha',
+      'mochapack',
       'nyc',
-      'webpack',
+      'chai',
+      'jsdom',
+      'jsdom-global',
+      'webpack-node-externals',
+      'webpack@4',
       'webpack-cli',
       'vue-loader',
       'vue-style-loader',
       'css-loader',
       'vue-template-compiler',
-      'html-webpack-plugin'
+      'html-webpack-plugin@4'
     ], { 'save-dev': true })
 
 
