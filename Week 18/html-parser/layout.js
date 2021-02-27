@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2020-12-30 08:23:43
- * @LastEditTime: 2020-12-31 16:55:54
+ * @LastEditTime: 2021-02-27 09:54:47
  * @Description: file content
  */
 
@@ -165,7 +165,7 @@ function flexLayout(element) {
         let crossSize = 0
 
         for (const item of items) {
-            itemStyle = item.style
+            const itemStyle = item.style
 
             if (itemStyle.flex) {
                 flexLine.push(item)
