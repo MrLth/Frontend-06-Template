@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-02-17 08:58:27
- * @LastEditTime: 2021-02-27 11:59:04
+ * @LastEditTime: 2021-02-27 14:52:00
  * @Description: file content
  */
 var Generator = require('yeoman-generator');
@@ -46,29 +46,26 @@ module.exports = class extends Generator {
       }
     }
 
-    try {
 
-      this.fs.extendJSON(this.destinationPath('package.json'), json)
-      this.npmInstall(['vue'], { 'save-dev': false })
-      this.npmInstall([
-        '@babel/core',
-        '@babel/preset-env',
-        '@babel/register',
-        '@istanbuljs/nyc-config-babel',
-        'babel-plugin-istanbul',
-        'mocha',
-        'nyc',
-        'webpack',
-        'webpack-cli',
-        'vue-loader',
-        'vue-style-loader',
-        'css-loader',
-        'vue-template-compiler',
-        'html-webpack-plugin'
-      ], { 'save-dev': true })
+    this.fs.extendJSON(this.destinationPath('package.json'), json)
+    this.npmInstall(['vue'], { 'save-dev': false })
+    this.npmInstall([
+      '@babel/core',
+      '@babel/preset-env',
+      '@babel/register',
+      '@istanbuljs/nyc-config-babel',
+      'babel-plugin-istanbul',
+      'mocha',
+      'nyc',
+      'webpack',
+      'webpack-cli',
+      'vue-loader',
+      'vue-style-loader',
+      'css-loader',
+      'vue-template-compiler',
+      'html-webpack-plugin'
+    ], { 'save-dev': true })
 
-    } catch (e) {
-      console.log('error', e)
-    }
+
   }
 };
