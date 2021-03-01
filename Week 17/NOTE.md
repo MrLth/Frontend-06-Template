@@ -44,8 +44,33 @@ $debug({
   },
   color: 2,
 });
+
+$debug({
+  title: `happy`,
+  para: 'what',
+  multi: {
+    'para1': 'para1 value',
+    'para2': 'para2 value'
+  },
+});
+
+$debug({
+  title: `happy`,
+  para: 'what',
+});
+
+$debug({
+  para: 'what',
+});
+
+$debug({
+  title: `happy`,
+});
 ```
 
 #### 效果
 
+[![6Pn2hq.png](https://s3.ax1x.com/2021/03/01/6Pn2hq.png)](https://imgtu.com/i/6Pn2hq)
+
 [![6PmjmQ.png](https://s3.ax1x.com/2021/03/01/6PmjmQ.png)](https://imgtu.com/i/6PmjmQ)
+
