@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "publish": "scp -P 22 -r ./* root@47.93.37.191:/root/extension-server"
+
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
