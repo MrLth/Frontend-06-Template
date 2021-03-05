@@ -2,7 +2,7 @@
  * @Author: mrlthf11
  * @LastEditors: mrlthf11
  * @Date: 2021-03-04 16:42:12
- * @LastEditTime: 2021-03-05 00:51:36
+ * @LastEditTime: 2021-03-05 08:18:46
  * @Description: file content
  */
 const http = require('http')
@@ -19,7 +19,7 @@ function oAuth(req, res) {
   const code = new URLSearchParams(req.url.split('?')[1]).get('code')
   getToken(code)
     .then((token) => {
-      res.end(`<a href='http://localhost:3002/publish?token=${token}'>publish</a>`)
+      res.end(`<a href='http://localhost:3002/authorization?token=${token}'>publish</a>`)
     })
     .catch(err => {
       res.end(err)
